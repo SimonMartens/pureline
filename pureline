@@ -1,6 +1,9 @@
-#!/bin/env bash
-
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
+
+# ----------------------------------------------------------------------------
+# Starting value for frequencyInfo
+
+PURELINE_FREQ_SET=1
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a section end
@@ -62,6 +65,59 @@ function time_module {
 }
 
 #------------------------------------------------------------------------------
+# NEW (Simon) module to show the available memory
+# content, arg1, arg2 as in all other functions
+
+function memory_module {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2
+    avail_mem=$(echo "scale=1; $(cat /proc/meminfo | grep MemAva | awk '{print $2}') / 1048576" | bc)                  
+    local content="${avail_mem}G"                 # Set the content to be displayed
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color=$bg_color
+}
+
+#------------------------------------------------------------------------------
+# NEW (Simon) module to show the current and minimal frequency
+# content, arg1, arg2 as in all other functions
+
+function freq_module {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2
+    local cur_freq
+    local cpu_symb;
+    if [ "$PURELINE_FREQ_SET" = 1 ]; then
+      cur_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq) / 1000000" | bc)
+      cpu_symb=$(echo "➤ ")
+      PURELINE_FREQ_SET=2
+    else
+      cur_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq) / 1000000" | bc)
+      cpu_symb=$(echo "⭳ ")
+      PURELINE_FREQ_SET=1
+    fi
+    local content="$cpu_symb${cur_freq}GHz"                 # Set the content to be displayed
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color=$bg_color
+}   
+
+#------------------------------------------------------------------------------
+# NEW (Simon) module to show a root warning
+# content, arg1, arg2 as in all other functions
+
+function root_module {
+  if [ ${EUID} -eq 0 ]; then
+    local bg_color=$1
+    local fg_color=$2
+    local content=$(echo "!ROOT!")
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color=$bg_color
+  fi
+}
+
+#------------------------------------------------------------------------------
 # append to prompt: user@host or user or root@host
 # arg: $1 foreground color
 # arg: $2 background color
@@ -81,7 +137,7 @@ function user_module {
         fi
     fi
     PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    PS1+="$(section_content $fg_color $bg_color " ${content} ")"
     __last_color="$bg_color"
 }
 
@@ -297,9 +353,9 @@ function battery_module {
 function prompt_module {
     local bg_color="$1"
     local fg_color="$2"
-    local content=" $(prompt_char) "
+    local content="$(prompt_char)"
     PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color "$content")"
+    PS1+="$(section_content $fg_color $bg_color "$content ")"
     __last_color="$bg_color"
 }
 
@@ -359,7 +415,7 @@ function pureline_ps1 {
 
     # final end point
     if [ -n "$__last_color" ]; then
-        PS1+="$(section_end $__last_color 'Default')"
+        PS1+=""
     else
         # No modules loaded, set a basic prompt
         PS1="PL | No Modules Loaded: $(prompt_char)"
