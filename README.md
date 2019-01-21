@@ -5,7 +5,7 @@ PureLine - A Pure Bash Powerline PS1 Command Prompt`
 
 
 
-![](assets/two-1548105568799.gif)
+![ ](assets/two-1548106228461.gif)
 
 
 
