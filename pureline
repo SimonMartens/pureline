@@ -4,6 +4,7 @@
 # Starting value for frequencyInfo
 
 PURELINE_FREQ_SET=1
+PURELINE_SHOW_TEMP=0
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a section end
@@ -87,16 +88,26 @@ function freq_module {
     local fg_color=$2
     local cur_freq
     local cpu_symb;
-    if [ "$PURELINE_FREQ_SET" = 1 ]; then
-      cur_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq) / 1000000" | bc)
-      cpu_symb=$(echo "➤ ")
-      PURELINE_FREQ_SET=2
+    local content;
+    local min_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq) / 1000000" | bc)
+    if [ "$PURELINE_FREQ_SET" = "$min_freq" ]; then
+      if [ "$PURELINE_SHOW_TEMP" = 0 ]; then
+        cur_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq) / 1000000" | bc)
+        cpu_symb=$(echo "⏱ ")
+        content="$cpu_symb${cur_freq}GHz"
+        PURELINE_SHOW_TEMP=1 
+      else
+       cur_freq=$(echo $(cat /sys/class/thermal/thermal_zone*/temp) | awk '{print $2/1000}')
+       cpu_symb=$(echo "⏲ ")
+       content="$cpu_symb${cur_freq}°C"
+        PURELINE_SHOW_TEMP=0
+      fi 
     else
-      cur_freq=$(echo "scale=1; $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq) / 1000000" | bc)
+      cur_freq="$min_freq"
       cpu_symb=$(echo "⭳ ")
-      PURELINE_FREQ_SET=1
+      PURELINE_FREQ_SET="$min_freq"
+      content="$cpu_symb${cur_freq}GHz"   
     fi
-    local content="$cpu_symb${cur_freq}GHz"                 # Set the content to be displayed
     PS1+="$(section_end $fg_color $bg_color)"
     PS1+="$(section_content $fg_color $bg_color " $content ")"
     __last_color=$bg_color
