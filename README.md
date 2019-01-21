@@ -1,11 +1,11 @@
-PureLine - A Pure Bash Powerline PS1 Command Prompt`
+PureLine - A Pure Bash Powerline PS1 Command Prompt
 ===================================================
+
+![](assets/one.gif)
 
 ![](assets/three.gif)
 
 ![](assets/two.gif)
-
-![](assets/one.gif)
 
 This PureLine-Version is the installation of PureLine I use on my own computer, based on [PureLine](https://github.com/chris-marsh/pureline). Installation instructions on the main git. I've added the following functions (in Powerline, they would be called 'segments'):
 
