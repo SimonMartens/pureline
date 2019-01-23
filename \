@@ -367,7 +367,7 @@ function prompt_module {
     local content="$(prompt_char)"
     PS1+="$(section_end $fg_color $bg_color)"
     PS1+="$(section_content $fg_color $bg_color "$content ")"
-    __last_color="$bg_color"
+    __last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
@@ -401,7 +401,7 @@ function newline_module {
 
 function insert_end_section {
     if [ -n "$__last_color" ]; then
-      if [ ! "$3" = 1 ]; then 
+      if [ ! "$3" = 1 ]; 
         PS1+="$(section_end $1 $2)"
       fi
     fi
